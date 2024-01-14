@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2> Create a Blog Post</h2>
+<form id="create-blog-form">
+    <input type="text" id="title" placeholder="Title" required><br>
+    <input type="text" id="author" placeholder="Author" required><br>
+    <textarea id="content" placeholder="Content" required></textarea><br>
+    <button type="submit">Create</button>
+</form>
+<h2> Posts </h2>
+<div id='posts-container'>
+
+</div>
+<button id="load-more">Load More</button>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    let currentPage=1;
+    let count = 1;
+    const loadPosts = () => {
+        fetch(`http://127.0.0.1:8000/api/blogs/?page=${currentPage}`).then(response => response.json())
+            .then(data => {
+                console.log(data);
+                const container = document.getElementById('posts-container');
+                
+                data.results.forEach(post => {
+                    const postElement = document.createElement('div');
+                    postElement.innerHTML = `<h2><a href="/${post.id}">${count}. ${post.title}</a></h2> <p>Date: ${post.publication_date}</p>`;
+                    container.appendChild(postElement);
+                    count++;
+
+                });
+                currentPage++;
+                if (!data.next) {
+                    document.getElementById('load-more').style.display = 'none';
+                }
+                
+            }).catch(error => {
+                console.error('Error loading posts:', error);
+            });
+    };
+
+    const createPost = (event) => {
+        event.preventDefault();
+        
+        const title = document.getElementById('title').value;
+        const author = document.getElementById('author').value;
+        const content = document.getElementById('content').value;
+
+        fetch('http://127.0.0.1:8000/api/blogs/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Include CSRF token if needed
+            },
+            body: JSON.stringify({ title, author, content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+            // Optionally, clear the form fields
+            document.getElementById('title').value = '';
+            document.getElementById('author').value = '';
+            document.getElementById('content').value = '';
+            // Reload or update the posts list
+            loadPosts();
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    };
+
+    document.getElementById('create-blog-form').addEventListener('submit', createPost);
+
+    document.getElementById('load-more').addEventListener('click', () => {
+        loadPosts();
+    });
+
+    loadPosts();
+
+    
+</script>
+{% endblock %}

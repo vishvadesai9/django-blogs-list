@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Blog App</title>
+    </head>
+
+    <body>
+        <header>
+            <h1><a href="{% url 'index' %}">Blogs</a></h1>
+        </header>
+
+        <main>
+            {% block content %}
+            {% endblock %}
+        </main>
+
+        <footer>
+            <p>Blog App End</p>
+        </footer>
+        {% block javascript %}
+        {% endblock %}
+    </body>
+</html>
